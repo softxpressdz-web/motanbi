@@ -1,0 +1,6 @@
+{
+  "name": "Dar Al-Mutanabbi",
+  "description": "E-commerce bookstore for Dar Al-Mutanabbi with full-stack Node.js, Express, PostgreSQL, and React.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
