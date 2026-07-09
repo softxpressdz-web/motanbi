@@ -5,9 +5,10 @@ import {
   ChevronDown, ChevronLeft, MessageSquare, Send, X, Bot, HelpCircle,
   AlertCircle, ExternalLink, ShieldAlert
 } from "lucide-react";
-import { auth, googleAuthProvider } from "../lib/firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { auth } from "../lib/firebase";
+import { signOut } from "firebase/auth";
 import { getCartCount } from "../lib/cartStore";
+import { AuthModal } from "./AuthModal";
 
 export function Layout({ children, user, dbUser }: { children: ReactNode; user: any; dbUser: any }) {
   const navigate = useNavigate();
@@ -28,9 +29,8 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   
-  // Iframe Popup Login Mitigation States
-  const [showIframeLoginModal, setShowIframeLoginModal] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  // Auth Modal State
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sync cart counter
   useEffect(() => {
@@ -61,40 +61,11 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
     }
   }, [chatMessages, isTyping, isChatOpen]);
 
-  const executeSignIn = async () => {
-    setLoginError(null);
-    try {
-      await signInWithPopup(auth, googleAuthProvider);
-      setShowIframeLoginModal(false);
-    } catch (err: any) {
-      console.error("Login failed:", err);
-      if (
-        err.code === "auth/cancelled-popup-request" ||
-        err.code === "auth/popup-blocked" ||
-        err.message?.includes("Pending promise was never set") ||
-        err.message?.includes("cancelled-popup")
-      ) {
-        setLoginError("تم حظر نافذة تسجيل الدخول المنبثقة من قبل المتصفح أو إطار الحماية. يرجى فتح الموقع في نافذة جديدة للتسجيل بأمان.");
-        setShowIframeLoginModal(true);
-      } else {
-        setLoginError(err.message || "فشل تسجيل الدخول. يرجى تكرار المحاولة.");
-      }
-    }
-  };
-
   const handleLogin = async () => {
     if (user) {
       await signOut(auth);
     } else {
-      // Detect if we are inside an iframe
-      const isIframe = window.self !== window.top;
-      
-      if (isIframe) {
-        setShowIframeLoginModal(true);
-        return;
-      }
-
-      await executeSignIn();
+      setShowAuthModal(true);
     }
   };
 
@@ -636,67 +607,8 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
         </div>
       </footer>
 
-      {/* Iframe & Popup Login Error Mitigation Modal */}
-      {showIframeLoginModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-stone-850" dir="rtl">
-          <div className="bg-white rounded-xl border border-stone-200 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-brand-900 text-white px-6 py-4 flex justify-between items-center border-b border-brand-850">
-              <h3 className="font-serif font-bold text-lg flex items-center gap-2">
-                <ShieldAlert className="text-accent-gold" size={20} />
-                <span>تنبيه أمان تسجيل الدخول</span>
-              </h3>
-              <button 
-                onClick={() => setShowIframeLoginModal(false)}
-                className="text-stone-300 hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto text-amber-600 border border-amber-200">
-                <AlertCircle size={32} />
-              </div>
-              
-              <div className="text-center space-y-2">
-                <h4 className="font-bold text-stone-800 text-sm">حظر النوافذ المنبثقة مفعّل أو الإطار محمي</h4>
-                <p className="text-stone-500 text-xs leading-relaxed">
-                  نظراً لقيود الأمان المفروضة من متصفحك على المواقع التي تعمل داخل إطارات مدمجة (Iframe)، يحظر المتصفح إتمام تسجيل الدخول عبر Google بشكل مباشر هنا.
-                </p>
-                <p className="text-brand-900 font-bold text-xs leading-relaxed bg-stone-50 p-3 rounded-lg border border-stone-200">
-                  لحل هذه المشكلة وتوقيع العقود أو شراء الكتب، يرجى فتح الموقع في علامة تبويب جديدة مستقلة والمحاولة مجدداً.
-                </p>
-              </div>
-
-              {loginError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-xs text-center leading-normal">
-                  {loginError}
-                </div>
-              )}
-            </div>
-            
-            <div className="bg-stone-50 px-6 py-4 border-t border-stone-200 flex flex-col sm:flex-row gap-2">
-              <a 
-                href={window.location.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-accent-gold hover:bg-accent-gold-hover text-brand-900 font-bold py-2.5 px-4 rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-md text-center"
-              >
-                <ExternalLink size={14} />
-                <span>الفتح في علامة تبويب جديدة</span>
-              </a>
-              <button 
-                onClick={() => {
-                  executeSignIn();
-                }}
-                className="py-2.5 px-4 text-stone-600 hover:text-stone-800 font-bold text-xs hover:bg-stone-100 rounded-lg transition-all text-center border border-stone-200"
-              >
-                المحاولة هنا على أي حال
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Main Authentication Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
