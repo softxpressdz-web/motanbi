@@ -155,7 +155,7 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-14 h-14 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm border border-stone-100 p-1">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden bg-stone-50 rounded-sm border border-stone-100 p-1">
               <img 
                 src="/logo.png" 
                 alt="دار المتنبي للطباعة والنشر" 
@@ -164,8 +164,8 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-serif font-bold text-2xl text-brand-900 leading-none tracking-tight">دار المتنبي</span>
-              <span className="font-serif text-[10px] text-stone-500 font-bold tracking-widest mt-1">للطباعة والنشر والتوزيع</span>
+              <span className="font-serif font-bold text-2xl sm:text-3xl text-brand-900 leading-none tracking-tight">دار المتنبي</span>
+              <span className="font-serif text-[10px] sm:text-xs text-stone-500 font-bold tracking-widest mt-1">للطباعة والنشر والتوزيع</span>
             </div>
           </Link>
 
