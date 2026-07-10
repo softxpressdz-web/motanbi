@@ -4,6 +4,7 @@ import { Star, ShoppingCart, Heart, Share2, ShieldCheck, Truck, ArrowRight, Chec
 import { motion, AnimatePresence } from "motion/react";
 import { ALL_BOOKS, Book } from "../lib/booksData";
 import { addToCart } from "../lib/cartStore";
+import { toggleWishlist, isInWishlist } from "../lib/wishlistStore";
 
 const ALGERIAN_WILAYAS = [
   "1- أدرار", "2- الشلف", "3- الأغواط", "4- أم البواقي", "5- باتنة", "6- بجاية", "7- بسكرة", "8- بشار", "9- البليدة", "10- البويرة",
@@ -41,11 +42,14 @@ export function BookDetail() {
   // Find current book
   const book = ALL_BOOKS.find(b => b.id === Number(id));
 
-  // Reset quantity on book change
+  // Reset quantity and wishlist state on book change
   useEffect(() => {
     setQuantity(1);
+    if (book) {
+      setIsWishlisted(isInWishlist(book.id));
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [id]);
+  }, [id, book]);
 
   if (!book) {
     return (
@@ -254,7 +258,12 @@ export function BookDetail() {
               
               <div className="flex gap-2 shrink-0">
                 <button 
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={() => {
+                    const added = toggleWishlist(book);
+                    setIsWishlisted(added);
+                    setSuccessToast(added ? `تم إضافة "${book.title}" إلى المفضلة!` : `تمت إزالة "${book.title}" من المفضلة.`);
+                    setTimeout(() => setSuccessToast(null), 3000);
+                  }}
                   className={`w-12 h-12 rounded border flex items-center justify-center transition-colors cursor-pointer ${
                     isWishlisted 
                       ? "bg-red-50 border-red-200 text-red-500" 

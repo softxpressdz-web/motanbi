@@ -16,6 +16,7 @@ export function PublishBook() {
   const [pageCount, setPageCount] = useState(150);
   const [coverType, setCoverType] = useState("paperback"); // paperback or hardcover
   const [printCopies, setPrintCopies] = useState(1000);
+  const [isCustomCopies, setIsCustomCopies] = useState(false);
   
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -37,7 +38,7 @@ export function PublishBook() {
   const retailPrice = Math.round(productionCostPerBook * 1.8);
   
   // Total printing quote for bulk copies
-  const totalPrintCost = productionCostPerBook * printCopies;
+  const totalPrintCost = productionCostPerBook * (printCopies || 0);
   
   // Simulated royalties (e.g. 70% of profit if self-published, or standard 15% royalty on sales)
   const royaltyPerSale = Math.round(retailPrice * 0.15);
@@ -224,17 +225,59 @@ export function PublishBook() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 mb-1">حجم الطبعة المطلوبة (عدد النسخ)</label>
-                  <select 
-                    value={printCopies}
-                    onChange={(e) => setPrintCopies(parseInt(e.target.value))}
-                    className="w-full p-2 border border-stone-200 rounded text-xs focus:outline-none bg-stone-50 font-bold"
-                  >
-                    <option value={500}>500 نسخة</option>
-                    <option value={1000}>1000 نسخة (طبعة أولى قياسية)</option>
-                    <option value={2000}>2000 نسخة</option>
-                    <option value={5000}>5000 نسخة (طبعة كبرى)</option>
-                  </select>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-bold text-stone-500">حجم الطبعة المطلوبة (عدد النسخ)</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomCopies(!isCustomCopies);
+                        if (isCustomCopies) {
+                          setPrintCopies(1000);
+                        }
+                      }}
+                      className="text-[11px] font-bold text-brand-900 hover:underline cursor-pointer"
+                    >
+                      {isCustomCopies ? "إدخال سريع (قائمة)" : "إدخال عدد مخصص يدويًا"}
+                    </button>
+                  </div>
+                  
+                  {isCustomCopies ? (
+                    <div className="relative flex items-center">
+                      <input 
+                        type="number" 
+                        min="50" 
+                        max="100000"
+                        step="50"
+                        value={printCopies || ""}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setPrintCopies(isNaN(val) ? 0 : val);
+                        }}
+                        className="w-full p-2 pl-12 border border-stone-200 rounded text-xs focus:outline-none bg-stone-50 font-bold"
+                        placeholder="أدخل عدد النسخ المطلوبة (مثال: 300)"
+                      />
+                      <span className="absolute left-3 text-[10px] font-bold text-stone-500">نسخة</span>
+                    </div>
+                  ) : (
+                    <select 
+                      value={printCopies}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "custom") {
+                          setIsCustomCopies(true);
+                        } else {
+                          setPrintCopies(parseInt(val));
+                        }
+                      }}
+                      className="w-full p-2 border border-stone-200 rounded text-xs focus:outline-none bg-stone-50 font-bold cursor-pointer"
+                    >
+                      <option value={500}>500 نسخة</option>
+                      <option value={1000}>1000 نسخة (طبعة أولى قياسية)</option>
+                      <option value={2000}>2000 نسخة</option>
+                      <option value={5000}>5000 نسخة (طبعة كبرى)</option>
+                      <option value="custom">كتابة عدد نسخ مخصص...</option>
+                    </select>
+                  )}
                 </div>
 
                 {/* Estimate Outputs */}
