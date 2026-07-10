@@ -106,8 +106,8 @@ export function About() {
                   </div>
                   <div>
                     <div className="text-sm text-stone-500 mb-1">البريد الإلكتروني</div>
-                    <a href="mailto:CONTACT@elmotanaby.com" className="font-medium text-brand-900 hover:text-accent-gold transition-colors block" dir="ltr">
-                      CONTACT@elmotanaby.com
+                    <a href="mailto:elmotanaby.dz@gmail.com" className="font-medium text-brand-900 hover:text-accent-gold transition-colors block font-mono" dir="ltr">
+                      elmotanaby.dz@gmail.com
                     </a>
                   </div>
                 </div>
@@ -117,9 +117,12 @@ export function About() {
                     <Phone size={24} />
                   </div>
                   <div>
-                    <div className="text-sm text-stone-500 mb-1">رقم الهاتف</div>
-                    <a href="tel:+213660000000" className="font-medium text-brand-900 hover:text-accent-gold transition-colors block" dir="ltr">
-                      +213 660 00 00 00
+                    <div className="text-sm text-stone-500 mb-1">أرقام الهاتف</div>
+                    <a href="tel:+213668144975" className="font-medium text-brand-900 hover:text-accent-gold transition-colors block font-mono" dir="ltr">
+                      +213 668 14 49 75
+                    </a>
+                    <a href="tel:+213773305282" className="font-medium text-brand-900 hover:text-accent-gold transition-colors block mt-1 font-mono" dir="ltr">
+                      +213 773 30 52 82
                     </a>
                   </div>
                 </div>
@@ -129,9 +132,9 @@ export function About() {
                     <MapPin size={24} />
                   </div>
                   <div>
-                    <div className="text-sm text-stone-500 mb-1">الموقع</div>
-                    <div className="font-medium text-brand-900">
-                      دار المتنبي للطباعة والنشر
+                    <div className="text-sm text-stone-500 mb-1">الموقع والمقر الرئيسي</div>
+                    <div className="font-medium text-brand-900 text-xs sm:text-sm">
+                      حي تعاونية الشيخ المقراني، المسيلة، الجزائر (مقابل لجامعة المسيلة)
                     </div>
                   </div>
                 </div>
@@ -140,10 +143,10 @@ export function About() {
               <div className="mt-8 pt-8 border-t border-stone-200">
                 <h3 className="font-bold text-brand-900 mb-4">تواصل فوري</h3>
                 <div className="flex gap-3">
-                  <a href="#" className="w-12 h-12 rounded-full flex items-center justify-center bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors" title="واتساب">
+                  <a href="https://wa.me/213668144975" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full flex items-center justify-center bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors" title="واتساب">
                     <MessageCircle size={22} />
                   </a>
-                  <a href="#" className="w-12 h-12 rounded-full flex items-center justify-center bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc] hover:text-white transition-colors" title="تيليجرام">
+                  <a href="https://t.me/213668144975" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full flex items-center justify-center bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc] hover:text-white transition-colors" title="تيليجرام">
                     <Send size={22} />
                   </a>
                   <button className="w-12 h-12 rounded-full flex items-center justify-center bg-brand-50 text-brand-900 hover:bg-brand-900 hover:text-accent-gold transition-colors" title="محادثة مباشرة">

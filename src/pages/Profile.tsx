@@ -137,13 +137,19 @@ export function Profile({ user, dbUser }: ProfileProps) {
         },
         body: JSON.stringify({
           uid: user.uid,
+          email: user.email,
           name: formData.name,
           phone: formData.phone,
           address: formData.address
         })
       });
       
-      const data = await response.json();
+      let data: any = {};
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        console.error("Failed to parse JSON response:", jsonErr);
+      }
       
       if (response.ok) {
         setSuccessMessage("تم تحديث معلومات الملف الشخصي بنجاح.");

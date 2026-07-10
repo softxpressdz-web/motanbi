@@ -143,9 +143,9 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
             <Link to="/offers" className="hover:text-accent-gold transition-colors font-bold text-accent-gold">تخفيضات</Link>
           </div>
           <div className="hidden sm:flex items-center gap-3">
-            <span>الهاتف: +213 660 00 00 00</span>
+            <span>الهاتف: +213 668 14 49 75</span>
             <span className="text-stone-700">|</span>
-            <span>الجزائر العاصمة</span>
+            <span>المسيلة</span>
           </div>
         </div>
       </div>

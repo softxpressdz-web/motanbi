@@ -331,10 +331,29 @@ export const app = express();
   app.get("/api/users/profile/:uid", async (req, res) => {
     try {
       const { uid } = req.params;
-      const [userObj] = await db.select().from(schema.users).where(eq(schema.users.uid, uid));
+      let [userObj] = await db.select().from(schema.users).where(eq(schema.users.uid, uid));
+      
+      if (!userObj) {
+        // Automatically create user in SQL database if they exist in Firebase Auth
+        try {
+          const firebaseUser = await adminAuth.getUser(uid);
+          if (firebaseUser && firebaseUser.email) {
+            userObj = await getOrCreateUser(uid, firebaseUser.email, firebaseUser.displayName || undefined);
+          }
+        } catch (firebaseErr) {
+          console.error("Firebase admin failed to fetch user for profile GET:", firebaseErr);
+        }
+      }
+
       if (!userObj) {
         return sendAPIResponse(res, "error", "المستخدم غير موجود", null, null, 404);
       }
+
+      if (userObj.email === "softxpressdz@gmail.com" && userObj.role !== "admin") {
+        await db.update(schema.users).set({ role: "admin" }).where(eq(schema.users.uid, uid));
+        userObj.role = "admin";
+      }
+
       return sendAPIResponse(res, "success", "تم جلب بيانات الملف الشخصي", userObj);
     } catch (error: any) {
       return sendAPIResponse(res, "error", "فشل جلب الملف الشخصي", error.message, null, 500);
@@ -343,20 +362,53 @@ export const app = express();
 
   app.put("/api/users/profile", async (req, res) => {
     try {
-      const { uid, name, phone, address } = req.body;
+      const { uid, email, name, phone, address } = req.body;
       if (!uid) {
         return sendAPIResponse(res, "error", "معرف المستخدم مطلوب", null, null, 400);
       }
-      await db.update(schema.users)
-        .set({
-          ...(name !== undefined && { name }),
-          ...(phone !== undefined && { phone }),
-          ...(address !== undefined && { address }),
-        })
-        .where(eq(schema.users.uid, uid));
+      
+      const [existing] = await db.select().from(schema.users).where(eq(schema.users.uid, uid));
+      
+      if (existing) {
+        // Update existing user profile
+        await db.update(schema.users)
+          .set({
+            ...(name !== undefined && { name }),
+            ...(phone !== undefined && { phone }),
+            ...(address !== undefined && { address }),
+          })
+          .where(eq(schema.users.uid, uid));
+      } else {
+        // Try to retrieve email from Firebase Auth if not in the body
+        let userEmail = email;
+        if (!userEmail) {
+          try {
+            const firebaseUser = await adminAuth.getUser(uid);
+            userEmail = firebaseUser.email || "";
+          } catch (firebaseErr) {
+            console.error("Firebase admin failed to fetch user during profile PUT:", firebaseErr);
+          }
+        }
+        
+        if (!userEmail) {
+          userEmail = `${uid}@placeholder.com`;
+        }
+
+        // Insert new user profile record
+        await db.insert(schema.users).values({
+          uid,
+          email: userEmail,
+          name: name || userEmail.split("@")[0],
+          phone: phone || null,
+          address: address || null,
+          role: userEmail === "softxpressdz@gmail.com" ? "admin" : "customer",
+        });
+      }
+
       const [updated] = await db.select().from(schema.users).where(eq(schema.users.uid, uid));
       return sendAPIResponse(res, "success", "تم تحديث الملف الشخصي بنجاح", updated);
     } catch (error: any) {
+      console.error("PUT Profile Error:", error);
       return sendAPIResponse(res, "error", "فشل تحديث الملف الشخصي", error.message, null, 500);
     }
   });

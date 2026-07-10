@@ -117,8 +117,8 @@ export function Contact() {
                 </div>
                 <div>
                   <div className="text-xs text-stone-400 mb-0.5">البريد الإلكتروني العام</div>
-                  <a href="mailto:contact@elmotanaby.com" className="font-bold text-brand-900 block font-mono" dir="ltr">
-                    contact@elmotanaby.com
+                  <a href="mailto:elmotanaby.dz@gmail.com" className="font-bold text-brand-900 block font-mono" dir="ltr">
+                    elmotanaby.dz@gmail.com
                   </a>
                 </div>
               </div>
@@ -128,9 +128,12 @@ export function Contact() {
                   <Phone size={20} />
                 </div>
                 <div>
-                  <div className="text-xs text-stone-400 mb-0.5">رقم الهاتف المركزي للدار</div>
-                  <a href="tel:+213660000000" className="font-bold text-brand-900 block font-mono" dir="ltr">
-                    +213 660 00 00 00
+                  <div className="text-xs text-stone-400 mb-0.5">أرقام الهاتف للدار</div>
+                  <a href="tel:+213668144975" className="font-bold text-brand-900 block font-mono" dir="ltr">
+                    +213 668 14 49 75
+                  </a>
+                  <a href="tel:+213773305282" className="font-bold text-brand-900 block font-mono mt-1" dir="ltr">
+                    +213 773 30 52 82
                   </a>
                 </div>
               </div>
@@ -142,7 +145,7 @@ export function Contact() {
                 <div>
                   <div className="text-xs text-stone-400 mb-0.5">العنوان والمقر الرئيسي</div>
                   <div className="font-bold text-brand-900">
-                    حي وادي الرمان، البليدة (الجزائر العاصمة)، الجمهورية الجزائرية
+                    حي تعاونية الشيخ المقراني، المسيلة، الجزائر (مقابل لجامعة المسيلة)
                   </div>
                 </div>
               </div>
@@ -154,7 +157,7 @@ export function Contact() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* WhatsApp */}
                 <a 
-                  href="https://wa.me/213660000000?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%20%D8%AF%D8%A7%D8%B1%20%D8%A7%D9%84%D9%85%D8%AA%D9%86%D8%A8%D9%8A%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20" 
+                  href="https://wa.me/213668144975?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%20%D8%AF%D8%A7%D8%B1%20%D8%A7%D9%84%D9%85%D8%AA%D9%86%D8%A8%D9%8A%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20" 
                   target="_blank" 
                   rel="noreferrer"
                   className="flex flex-col items-center justify-center gap-2 bg-[#25D366]/5 text-[#25D366] hover:bg-[#25D366] hover:text-white p-4 rounded-lg transition-all border border-[#25D366]/10 shadow-sm cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
@@ -165,7 +168,7 @@ export function Contact() {
                 
                 {/* Telegram */}
                 <a 
-                  href="https://t.me/elmotanaby_publish" 
+                  href="https://t.me/213668144975" 
                   target="_blank" 
                   rel="noreferrer"
                   className="flex flex-col items-center justify-center gap-2 bg-[#0088cc]/5 text-[#0088cc] hover:bg-[#0088cc] hover:text-white p-4 rounded-lg transition-all border border-[#0088cc]/10 shadow-sm cursor-pointer hover:scale-[1.02] active:scale-[0.98]"

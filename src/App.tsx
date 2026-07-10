@@ -33,23 +33,39 @@ export default function App() {
   const [dbUser, setDbUser] = useState<any>(null);
 
   useEffect(() => {
+    const fetchProfile = async (uid: string) => {
+      try {
+        const res = await fetch(`/api/users/profile/${uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDbUser(data.data || data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch user profile", e);
+      }
+    };
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        try {
-          const res = await fetch(`/api/users/profile/${currentUser.uid}`);
-          if (res.ok) {
-            const data = await res.json();
-            setDbUser(data.data || data);
-          }
-        } catch (e) {
-          console.error("Failed to fetch user profile", e);
-        }
+        await fetchProfile(currentUser.uid);
       } else {
         setDbUser(null);
       }
     });
-    return () => unsubscribe();
+
+    const handleProfileUpdated = () => {
+      if (auth.currentUser) {
+        fetchProfile(auth.currentUser.uid);
+      }
+    };
+
+    window.addEventListener("profile-updated", handleProfileUpdated);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("profile-updated", handleProfileUpdated);
+    };
   }, []);
 
   return (
