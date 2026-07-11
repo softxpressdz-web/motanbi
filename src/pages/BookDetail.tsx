@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ALL_BOOKS, Book } from "../lib/booksData";
 import { addToCart } from "../lib/cartStore";
 import { toggleWishlist, isInWishlist } from "../lib/wishlistStore";
+import { auth } from "../lib/firebase";
 
 const ALGERIAN_WILAYAS = [
   "1- أدرار", "2- الشلف", "3- الأغواط", "4- أم البواقي", "5- باتنة", "6- بجاية", "7- بسكرة", "8- بشار", "9- البليدة", "10- البويرة",
@@ -50,6 +51,51 @@ export function BookDetail() {
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id, book]);
+
+  // Prefill user profile if logged in
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const res = await fetch(`/api/users/profile/${currentUser.uid}`);
+          if (res.ok) {
+            const result = await res.json();
+            const data = result.data || result;
+            if (data) {
+              setDirectOrderForm(prev => {
+                let parsedWilaya = prev.wilaya;
+                let parsedAddress = prev.address;
+                if (data.address) {
+                  const parts = data.address.split(" - ");
+                  if (parts.length > 1) {
+                    const possibleWilaya = parts[0].trim();
+                    const found = ALGERIAN_WILAYAS.find(w => w.includes(possibleWilaya) || possibleWilaya.includes(w));
+                    if (found) {
+                      parsedWilaya = found;
+                    }
+                    parsedAddress = parts.slice(1).join(" - ");
+                  } else {
+                    parsedAddress = data.address;
+                  }
+                }
+                return {
+                  fullName: data.name || prev.fullName,
+                  phone: data.phone || prev.phone,
+                  wilaya: parsedWilaya,
+                  address: parsedAddress,
+                };
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch user profile for direct order prefill", e);
+        }
+      }
+    };
+    
+    fetchUserProfile();
+  }, [showDirectOrderModal]);
 
   if (!book) {
     return (
@@ -104,17 +150,24 @@ export function BookDetail() {
     e.preventDefault();
     setIsSubmittingOrder(true);
     
-    // Create the order payload
+    // Create the order payload in line with backend requirements
     const newOrder = {
-      id: "ORD-" + Math.floor(Math.random() * 1000000),
-      date: new Date().toISOString().split("T")[0],
-      customer: directOrderForm.fullName,
+      userId: auth.currentUser?.uid || undefined,
+      name: directOrderForm.fullName,
       phone: directOrderForm.phone,
+      email: `${directOrderForm.phone}@elmotanaby.com`,
       wilaya: directOrderForm.wilaya,
       address: directOrderForm.address,
-      items: [{ title: book?.title, quantity, price: book?.price }],
+      shippingMethod: "home",
+      paymentMethod: "COD",
+      items: [
+        {
+          bookId: book?.id,
+          quantity: quantity,
+          price: book?.price,
+        }
+      ],
       total: (book?.price || 0) * quantity + 600 - directDiscount, // +600 DA delivery estimate - discount
-      status: "pending" as const,
     };
 
     try {
@@ -127,7 +180,14 @@ export function BookDetail() {
       if (response.ok) {
         setDirectOrderSuccess(true);
       } else {
-        alert("حدث خطأ أثناء إرسال الطلب، يرجى المحاولة لاحقاً.");
+        let errMsg = "حدث خطأ أثناء إرسال الطلب، يرجى المحاولة لاحقاً.";
+        try {
+          const errJson = await response.json();
+          if (errJson && errJson.message) {
+            errMsg = errJson.message;
+          }
+        } catch (_) {}
+        alert(errMsg);
       }
     } catch (error) {
       console.error(error);
