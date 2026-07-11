@@ -267,7 +267,10 @@ export const app = express();
 
   // Resolve user database ID from UID or return original if it is a number
   async function resolveUserId(uidOrId: string | number): Promise<number | null> {
-    if (typeof uidOrId === "number" || !isNaN(Number(uidOrId))) {
+    if (!uidOrId || uidOrId === "null" || uidOrId === "undefined" || uidOrId.toString().trim() === "") {
+      return null;
+    }
+    if (typeof uidOrId === "number" || (!isNaN(Number(uidOrId)) && uidOrId.toString().trim() !== "")) {
       return Number(uidOrId);
     }
     const [userObj] = await db.select().from(schema.users).where(eq(schema.users.uid, uidOrId.toString()));

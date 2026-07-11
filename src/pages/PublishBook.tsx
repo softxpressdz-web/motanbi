@@ -40,8 +40,8 @@ export function PublishBook() {
   // Total printing quote for bulk copies
   const totalPrintCost = productionCostPerBook * (printCopies || 0);
   
-  // Simulated royalties (e.g. 70% of profit if self-published, or standard 15% royalty on sales)
-  const royaltyPerSale = Math.round(retailPrice * 0.15);
+  // Simulated royalties (e.g. 70% of profit if self-published, or standard 10% royalty on sales)
+  const royaltyPerSale = Math.round(retailPrice * 0.10);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -101,7 +101,11 @@ export function PublishBook() {
       });
 
       if (!response.ok) {
-        throw new Error("حدث خطأ في الخادم أثناء حفظ المخطوط وتوقيع العقد. يرجى المحاولة لاحقاً.");
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (_) {}
+        throw new Error(errorData?.message || "حدث خطأ في الخادم أثناء حفظ المخطوط وتوقيع العقد. يرجى المحاولة لاحقاً.");
       }
 
       setPricingApproved(true);
@@ -291,7 +295,7 @@ export function PublishBook() {
                     <span className="font-bold text-stone-800">{retailPrice} د.ج</span>
                   </div>
                   <div className="flex justify-between border-t border-stone-200 pt-2 text-brand-900 font-bold">
-                    <span>عائد الكاتب عن كل نسخة مبيعة (15%):</span>
+                    <span>عائد الكاتب عن كل نسخة مبيعة (10%):</span>
                     <span className="text-accent-gold">{royaltyPerSale} د.ج</span>
                   </div>
                   <div className="flex justify-between">
@@ -487,7 +491,7 @@ export function PublishBook() {
                       <span className="font-bold text-brand-900 text-base">{retailPrice} د.ج</span>
                     </div>
                     <div className="flex justify-between text-brand-900 font-bold bg-white p-3 rounded border border-stone-200">
-                      <span className="flex items-center gap-1">أرباح المؤلف الصافية (15% من المبيعات):</span>
+                      <span className="flex items-center gap-1">أرباح المؤلف الصافية (10% من المبيعات):</span>
                       <span className="text-accent-gold text-base">{royaltyPerSale} د.ج عن كل نسخة مباعة</span>
                     </div>
                   </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { Trash2, ShoppingBag, ArrowRight, Truck, ClipboardList, CheckCircle, ShieldCheck, Download, Printer } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { getCart, addToCart, updateQuantity, removeFromCart, clearCart, getCartTotal, getCartCount } from "../lib/cartStore";
+import { auth } from "../lib/firebase";
 
 // Algerian states with custom shipping fees
 const ALGERIAN_WILAYAS = [
@@ -120,6 +121,44 @@ export function Cart() {
     }
   }, [selectedWilaya]);
 
+  // Prefill user profile if logged in
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const res = await fetch(`/api/users/profile/${currentUser.uid}`);
+          if (res.ok) {
+            const result = await res.json();
+            const data = result.data || result;
+            if (data) {
+              if (data.name) setFullName(data.name);
+              if (data.phone) setPhone(data.phone);
+              if (data.address) {
+                // If address is "Wilaya - Address detail", parse it
+                const parts = data.address.split(" - ");
+                if (parts.length > 1) {
+                  const possibleWilaya = parts[0].trim();
+                  const found = ALGERIAN_WILAYAS.find(w => w.name.includes(possibleWilaya) || possibleWilaya.includes(w.name));
+                  if (found) {
+                    setSelectedWilaya(found.name);
+                  }
+                  setAddress(parts.slice(1).join(" - "));
+                } else {
+                  setAddress(data.address);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch user profile for cart prefill", e);
+        }
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
+
   const handleQtyChange = (bookId: number, delta: number) => {
     const item = cartItems.find(i => i.book.id === bookId);
     if (item) {
@@ -154,6 +193,7 @@ export function Cart() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          userId: auth.currentUser?.uid || undefined,
           name: fullName,
           phone,
           email: `${phone}@elmotanaby.com`,
@@ -171,7 +211,11 @@ export function Cart() {
       });
 
       if (!response.ok) {
-        throw new Error("حدث خطأ في الخادم أثناء تسجيل طلبك. يرجى إعادة المحاولة.");
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (_) {}
+        throw new Error(errorData?.message || "حدث خطأ في الخادم أثناء تسجيل طلبك. يرجى إعادة المحاولة.");
       }
 
       const data = await response.json();
