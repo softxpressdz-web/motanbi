@@ -119,7 +119,7 @@ export function Home() {
             >
               <div className="relative aspect-[2/3] mb-4 overflow-hidden rounded bg-stone-50 shadow-inner">
                 <img 
-                  src={book.image} 
+                  src={book.coverImage || book.image} 
                   alt={book.title} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                 />
@@ -250,7 +250,7 @@ export function Home() {
             
             {isCategoryDropdownOpen && (
               <div className="absolute top-full left-0 right-0 md:left-auto md:right-0 md:w-64 mt-2 bg-white border border-stone-100 shadow-2xl rounded max-h-80 overflow-y-auto z-50 py-2">
-                {CATEGORIES.slice(0, 15).map((cat) => (
+                {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => {
@@ -296,7 +296,7 @@ export function Home() {
               >
                 <div className="relative aspect-[2/3] mb-4 overflow-hidden rounded bg-stone-50 shadow-inner">
                   <img 
-                    src={book.image} 
+                    src={book.coverImage || book.image} 
                     alt={book.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -374,7 +374,7 @@ export function Home() {
               >
                 <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 flex items-center justify-center p-4">
                   <img 
-                    src={book.image} 
+                    src={book.coverImage || book.image} 
                     alt={book.title}
                     className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md"
                   />

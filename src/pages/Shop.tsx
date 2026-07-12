@@ -317,7 +317,7 @@ export function Shop() {
               >
                 <div className="relative aspect-[2/3] mb-4 overflow-hidden rounded bg-stone-50 shadow-inner">
                   <img 
-                    src={book.image} 
+                    src={book.coverImage || book.image} 
                     alt={book.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   />

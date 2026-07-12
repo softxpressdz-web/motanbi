@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
 
@@ -541,14 +540,24 @@ export const app = express();
 
   app.post("/api/books", async (req, res) => {
     try {
-      const { title, price, description, coverImage, isbn } = req.body;
+      const { title, price, description, coverImage, images, isbn, tableOfContents, categoryId } = req.body;
       const [newBook] = await db.insert(schema.books).values({
         title: title || "كتاب جديد",
         price: price || "0",
         description: description || "",
         coverImage: coverImage || "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80",
-        isbn: isbn || ""
+        images: images || [],
+        isbn: isbn || "",
+        tableOfContents: tableOfContents || ""
       }).returning();
+      
+      if (categoryId && newBook) {
+        await db.insert(schema.bookCategories).values({
+          bookId: newBook.id,
+          categoryId: categoryId,
+        });
+      }
+
       return sendAPIResponse(res, "success", "تمت إضافة الكتاب بنجاح", newBook);
     } catch (error: any) {
       return sendAPIResponse(res, "error", "فشل إضافة الكتاب", error.message, null, 500);
@@ -835,6 +844,31 @@ export const app = express();
     } catch (error: any) {
       console.error("Error saving manuscript:", error);
       return sendAPIResponse(res, "error", "حدث خطأ أثناء حفظ المخطوطة", error.message, null, 500);
+    }
+  });
+
+  
+  app.put("/api/manuscripts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, retailPrice, productionCostPerBook } = req.body;
+      const updateData: any = {};
+      if (status !== undefined) updateData.status = status;
+      if (productionCostPerBook !== undefined) updateData.productionCostPerBook = productionCostPerBook;
+      if (retailPrice !== undefined) {
+        updateData.retailPrice = retailPrice;
+        // update royalty as well: 10% of retail price
+        updateData.royaltyPerSale = (parseFloat(retailPrice) * 0.10).toFixed(2);
+      }
+      
+      const [updated] = await db.update(schema.manuscriptSubmissions)
+        .set(updateData)
+        .where(eq(schema.manuscriptSubmissions.id, id))
+        .returning();
+      return sendAPIResponse(res, "success", "تم تحديث طلب النشر بنجاح", updated);
+    } catch (error: any) {
+      console.error("Error updating manuscript:", error);
+      return sendAPIResponse(res, "error", "فشل تحديث طلب النشر", error.message, null, 500);
     }
   });
 
@@ -1537,7 +1571,7 @@ export const app = express();
   app.put("/api/books/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { title, description, price, discountPrice, stock, isbn, pages, language, publishYear, publisher, coverImage, status } = req.body;
+      const { title, description, price, discountPrice, stock, isbn, pages, language, publishYear, publisher, coverImage, images, status, tableOfContents, categoryId } = req.body;
       const [updatedBook] = await db.update(schema.books)
         .set({
           title,
@@ -1551,10 +1585,25 @@ export const app = express();
           publishYear: publishYear ? parseInt(publishYear) : null,
           publisher,
           coverImage,
+          images: images || [],
+          tableOfContents,
           status: status || "available"
         })
         .where(eq(schema.books.id, id))
         .returning();
+
+      if (categoryId !== undefined) {
+        // Delete existing category relations for this book
+        await db.delete(schema.bookCategories).where(eq(schema.bookCategories.bookId, id));
+        if (categoryId) {
+          // Insert new relation
+          await db.insert(schema.bookCategories).values({
+            bookId: id,
+            categoryId: categoryId,
+          });
+        }
+      }
+
       return sendAPIResponse(res, "success", "تم تحديث الكتاب بنجاح", updatedBook);
     } catch (error: any) {
       return sendAPIResponse(res, "error", "فشل تحديث الكتاب", error.message, null, 500);
@@ -1713,6 +1762,7 @@ export const app = express();
   async function startViteServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

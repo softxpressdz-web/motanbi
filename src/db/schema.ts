@@ -41,6 +41,8 @@ export const books = pgTable('books', {
   publishYear: integer('publish_year'),
   publisher: text('publisher'),
   coverImage: text('cover_image'),
+  images: text('images').array(),
+  tableOfContents: text('table_of_contents'),
   status: text('status').default('available'), // available, unavailable
   createdAt: timestamp('created_at').defaultNow(),
 });

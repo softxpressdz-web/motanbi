@@ -40,12 +40,40 @@ export function BookDetail() {
   const [directCouponError, setDirectCouponError] = useState("");
   const [directCouponSuccess, setDirectCouponSuccess] = useState("");
 
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+
   // Find current book
-  const book = ALL_BOOKS.find(b => b.id === Number(id));
+  const [dbBook, setDbBook] = useState<any>(null);
+  const [loadingBook, setLoadingBook] = useState(true);
+
+  useEffect(() => {
+    const fetchBook = async () => {
+      setLoadingBook(true);
+      try {
+        const res = await fetch(`/api/books/${id}`);
+        if (res.ok) {
+          const result = await res.json();
+          if (result.data) {
+            setDbBook(result.data);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching book:", err);
+      } finally {
+        setLoadingBook(false);
+      }
+    };
+    if (id) {
+      fetchBook();
+    }
+  }, [id]);
+
+  const book = dbBook || ALL_BOOKS.find(b => b.id === Number(id));
 
   // Reset quantity and wishlist state on book change
   useEffect(() => {
     setQuantity(1);
+    setActiveImage(null);
     if (book) {
       setIsWishlisted(isInWishlist(book.id));
     }
@@ -96,6 +124,15 @@ export function BookDetail() {
     
     fetchUserProfile();
   }, [showDirectOrderModal]);
+
+  if (loadingBook) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-32 text-center flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-brand-900 mb-4" size={48} />
+        <h2 className="text-xl font-bold text-stone-500">جاري تحميل بيانات الكتاب...</h2>
+      </div>
+    );
+  }
 
   if (!book) {
     return (
@@ -229,15 +266,34 @@ export function BookDetail() {
       <div className="bg-white rounded-lg shadow-sm border border-stone-150 overflow-hidden mb-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 p-6 md:p-12">
           
-          {/* Cover Image */}
-          <div className="flex justify-center items-start">
+          {/* Cover Image & Gallery */}
+          <div className="flex flex-col items-center justify-start gap-4">
             <div className="w-full max-w-md aspect-[2/3] rounded overflow-hidden shadow-lg border border-stone-100 bg-stone-50">
               <img 
-                src={book.image} 
+                src={activeImage || book.coverImage || book.image} 
                 alt={book.title} 
                 className="w-full h-full object-cover" 
               />
             </div>
+            {book.images && book.images.length > 0 && (
+              <div className="flex gap-2 w-full max-w-md overflow-x-auto pb-2 custom-scrollbar">
+                <button 
+                  onClick={() => setActiveImage(book.coverImage || book.image)}
+                  className={`relative w-16 h-24 shrink-0 rounded overflow-hidden border-2 transition-all ${(activeImage === null || activeImage === (book.coverImage || book.image)) ? 'border-brand-900 shadow-md scale-95' : 'border-transparent hover:border-stone-300'}`}
+                >
+                  <img src={book.coverImage || book.image} className="w-full h-full object-cover" alt="Main cover" />
+                </button>
+                {book.images.map((img: string, idx: number) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setActiveImage(img)}
+                    className={`relative w-16 h-24 shrink-0 rounded overflow-hidden border-2 transition-all ${activeImage === img ? 'border-brand-900 shadow-md scale-95' : 'border-transparent hover:border-stone-300'}`}
+                  >
+                    <img src={img} className="w-full h-full object-cover" alt={`Additional image ${idx + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Details */}
@@ -276,6 +332,15 @@ export function BookDetail() {
                 {book.description}
               </p>
             </div>
+
+            {book.tableOfContents && (
+              <div className="border-b border-stone-100 pb-6 mb-8">
+                <h3 className="font-bold text-brand-900 text-sm mb-3">فهرس الكتاب:</h3>
+                <div className="text-stone-600 text-sm leading-relaxed whitespace-pre-line bg-stone-50 p-4 rounded border border-stone-150 text-justify">
+                  {book.tableOfContents}
+                </div>
+              </div>
+            )}
 
             {/* Quantity and Actions */}
             <div className="flex flex-col sm:flex-row gap-4 mb-10">
@@ -484,7 +549,7 @@ export function BookDetail() {
                     <div className="bg-stone-50 rounded-lg p-4 mb-6 border border-stone-200">
                       <h4 className="font-bold text-brand-900 text-sm mb-3">ملخص الطلب:</h4>
                       <div className="flex items-center gap-4 mb-3">
-                        <img src={book.image} alt={book.title} className="w-12 h-16 object-cover rounded shadow-sm" />
+                        <img src={book.coverImage || book.image} alt={book.title} className="w-12 h-16 object-cover rounded shadow-sm" />
                         <div className="flex-1">
                           <p className="font-bold text-stone-800 text-sm line-clamp-1">{book.title}</p>
                           <p className="text-stone-500 text-xs">الكمية: {quantity}</p>

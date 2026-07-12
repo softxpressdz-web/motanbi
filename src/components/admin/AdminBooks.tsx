@@ -5,6 +5,7 @@ import {
 
 interface AdminBooksProps {
   allBooks: any[];
+  allCategories: any[];
   onRefresh: () => void;
 }
 
@@ -16,7 +17,7 @@ const COVER_PRESETS = [
   { name: "شعر وقصائد", url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80" }
 ];
 
-export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
+export function AdminBooks({ allBooks, allCategories, onRefresh }: AdminBooksProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<any | null>(null);
   const [formLoading, setFormLoading] = useState(false);
@@ -35,6 +36,9 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
   const [publishYear, setPublishYear] = useState("2026");
   const [publisher, setPublisher] = useState("دار المتنبي للنشر والتوزيع");
   const [coverImage, setCoverImage] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [tableOfContents, setTableOfContents] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [status, setStatus] = useState("available");
   const [isCompressing, setIsCompressing] = useState(false);
 
@@ -55,6 +59,9 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
     setPublishYear("2026");
     setPublisher("دار المتنبي للنشر والتوزيع");
     setCoverImage(COVER_PRESETS[1].url); // default رواية وأدب
+    setImages([]);
+    setTableOfContents("");
+    setCategoryId("");
     setStatus("available");
     setFormError(null);
     setFormSuccess(null);
@@ -74,6 +81,9 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
     setPublishYear(book.publishYear ? book.publishYear.toString() : "2026");
     setPublisher(book.publisher || "دار المتنبي للنشر والتوزيع");
     setCoverImage(book.coverImage || book.image || "");
+    setImages(book.images || []);
+    setTableOfContents(book.tableOfContents || "");
+    setCategoryId(book.categoryId ? book.categoryId.toString() : "");
     setStatus(book.status || "available");
     setFormError(null);
     setFormSuccess(null);
@@ -113,6 +123,49 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
     };
   };
 
+  const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCompressing(true);
+    let processedImages: string[] = [];
+    let filesProcessed = 0;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          processedImages.push(compressedDataUrl);
+          filesProcessed++;
+
+          if (filesProcessed === files.length) {
+            setImages((prev) => [...prev, ...processedImages]);
+            setIsCompressing(false);
+          }
+        };
+      };
+    });
+  };
+
   const handleSaveBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !price) {
@@ -136,6 +189,9 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
       publishYear: parseInt(publishYear),
       publisher,
       coverImage,
+      images,
+      tableOfContents,
+      categoryId: categoryId ? parseInt(categoryId) : null,
       status
     };
 
@@ -425,6 +481,17 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-700">فهرس الكتاب (اختياري)</label>
+                <textarea 
+                  rows={4}
+                  value={tableOfContents}
+                  onChange={(e) => setTableOfContents(e.target.value)}
+                  placeholder="الفصل الأول: ...&#10;الفصل الثاني: ..."
+                  className="border border-stone-250 rounded px-3 py-2 text-xs w-full focus:outline-none focus:border-brand-900 leading-relaxed font-medium"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-stone-700">السعر (د.ج) <span className="text-red-500">*</span></label>
@@ -462,6 +529,20 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
                     onChange={(e) => setStock(e.target.value)}
                     className="border border-stone-250 rounded px-3 py-2 text-xs w-full focus:outline-none focus:border-brand-900 font-bold font-mono"
                   />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-700">تصنيف الكتاب</label>
+                  <select 
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="border border-stone-250 rounded px-3 py-2 text-xs w-full focus:outline-none focus:border-brand-900 font-bold text-stone-700"
+                  >
+                    <option value="">بدون تصنيف</option>
+                    {allCategories && allCategories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-1.5">
@@ -588,6 +669,49 @@ export function AdminBooks({ allBooks, onRefresh }: AdminBooksProps) {
                     );
                   })}
                 </div>
+
+                {/* Additional Images Selector */}
+                <div className="mt-4 pt-4 border-t border-stone-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+                      <ImageIcon size={14} className="text-brand-900" />
+                      <span>صور إضافية للكتاب (اختياري)</span>
+                    </label>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <label className="bg-stone-200 hover:bg-stone-300 text-stone-800 px-3 py-2 rounded text-xs font-bold cursor-pointer transition-colors flex items-center justify-center whitespace-nowrap w-full border border-stone-300 border-dashed">
+                        <span>+ رفع صور إضافية المتعددة...</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          multiple
+                          className="hidden" 
+                          onChange={handleAdditionalImagesUpload} 
+                        />
+                      </label>
+                    </div>
+
+                    {images.length > 0 && (
+                      <div className="grid grid-cols-5 gap-2 mt-2">
+                        {images.map((imgUrl, idx) => (
+                          <div key={idx} className="relative h-16 rounded overflow-hidden border border-stone-200 group">
+                            <img src={imgUrl} className="w-full h-full object-cover" alt="" />
+                            <button
+                              type="button"
+                              onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                              className="absolute top-0 right-0 bg-red-500 text-white w-5 h-5 flex items-center justify-center text-[10px] rounded-bl opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              X
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               <div className="flex justify-end gap-3 border-t border-stone-150 pt-4 mt-6">

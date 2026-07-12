@@ -1,7 +1,8 @@
+import html2pdf from "html2pdf.js";
 import React, { useState, useEffect } from "react";
 import { 
   LayoutDashboard, DollarSign, BookOpen, ScrollText, Mail, Users, 
-  ShieldAlert, Loader2, RefreshCw, Handshake, Tag, Percent, Newspaper, Settings
+  ShieldAlert, Loader2, RefreshCw, Handshake, Tag, Percent, Newspaper, Settings, X, Download, Printer
 } from "lucide-react";
 
 // Import modular sub-components
@@ -48,6 +49,48 @@ export function Admin({ dbUser }: { dbUser?: any }) {
   const [allAuthors, setAllAuthors] = useState<any[]>([]);
   const [allCoupons, setAllCoupons] = useState<any[]>([]);
   const [allBlogPosts, setAllBlogPosts] = useState<any[]>([]);
+  const [selectedManuscript, setSelectedManuscript] = useState<any>(null);
+  const [isEditingManuscript, setIsEditingManuscript] = useState(false);
+  const [manuscriptForm, setManuscriptForm] = useState({ status: '', retailPrice: '', productionCostPerBook: '' });
+  const [isUpdatingManuscript, setIsUpdatingManuscript] = useState(false);
+
+  const handleEditManuscriptClick = (sub: any) => {
+    setSelectedManuscript(sub);
+    setManuscriptForm({
+      status: sub.status || 'submitted',
+      retailPrice: sub.retailPrice || '', productionCostPerBook: sub.productionCostPerBook || ''
+    });
+    setIsEditingManuscript(false);
+  };
+
+  const handleSaveManuscript = async () => {
+    if (!selectedManuscript) return;
+    setIsUpdatingManuscript(true);
+    try {
+      const res = await fetch(`/api/manuscripts/${selectedManuscript.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: manuscriptForm.status,
+          retailPrice: manuscriptForm.retailPrice,
+          productionCostPerBook: manuscriptForm.productionCostPerBook
+        })
+      });
+      if (res.ok) {
+        await fetchAllAdminData();
+        const updated = await res.json();
+        setSelectedManuscript(updated.data || updated);
+        setIsEditingManuscript(false);
+      } else {
+        alert("فشل تحديث المخطوط");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("حدث خطأ أثناء التحديث");
+    } finally {
+      setIsUpdatingManuscript(false);
+    }
+  };
 
   const fetchAllAdminData = async () => {
     if (!dbUser || dbUser.role !== "admin") {
@@ -210,6 +253,7 @@ export function Admin({ dbUser }: { dbUser?: any }) {
         {activeTab === "books" && (
           <AdminBooks 
             allBooks={allBooks}
+            allCategories={allCategories}
             onRefresh={fetchAllAdminData}
           />
         )}
@@ -284,6 +328,7 @@ export function Admin({ dbUser }: { dbUser?: any }) {
                       <th className="p-3">تكلفة الطبع المقدرة</th>
                       <th className="p-3">سعر البيع وعائد الكاتب</th>
                       <th className="p-3 text-left pl-6">التوقيع الإلكتروني</th>
+                      <th className="p-3 text-center">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-150">
@@ -309,16 +354,308 @@ export function Admin({ dbUser }: { dbUser?: any }) {
                         </td>
                         <td className="p-3">
                           <div className="font-bold text-stone-800">السعر: {sub.retailPrice} د.ج</div>
-                          <div className="text-accent-gold font-bold text-[10px] mt-0.5">أرباح الكاتب: {sub.royaltyPerSale} د.ج (15%)</div>
+                          <div className="text-accent-gold font-bold text-[10px] mt-0.5">أرباح الكاتب: {sub.royaltyPerSale} د.ج (10%)</div>
                         </td>
                         <td className="p-3 text-left pl-6 font-mono font-bold text-emerald-600">
                           "{sub.signatureName || "موقّع"}"
+                        </td>
+                        <td className="p-3 text-center">
+                          <button 
+                            onClick={() => handleEditManuscriptClick(sub)}
+                            className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded text-xs font-bold transition-colors"
+                          >
+                            عرض التفاصيل
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Manuscript Details Modal */}
+        {selectedManuscript && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="bg-brand-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 className="font-serif font-bold text-lg">تفاصيل المخطوط وعقد النشر</h3>
+                <button onClick={() => setSelectedManuscript(null)} className="text-white hover:text-stone-300">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto space-y-6 flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                    <h4 className="font-bold text-brand-900 mb-3 border-b border-stone-200 pb-2">معلومات المؤلف</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-stone-500 w-24 inline-block">الاسم الكامل:</span> <span className="font-bold">{selectedManuscript.authorName}</span></p>
+                      <p><span className="text-stone-500 w-24 inline-block">البريد:</span> <span className="font-mono">{selectedManuscript.email}</span></p>
+                      <p><span className="text-stone-500 w-24 inline-block">الهاتف:</span> <span className="font-mono">{selectedManuscript.phone}</span></p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                    <h4 className="font-bold text-brand-900 mb-3 border-b border-stone-200 pb-2">معلومات المخطوط</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-stone-500 w-24 inline-block">عنوان الكتاب:</span> <span className="font-bold">{selectedManuscript.bookTitle}</span></p>
+                      <p><span className="text-stone-500 w-24 inline-block">التصنيف:</span> <span>{selectedManuscript.bookCategory}</span></p>
+                      <p><span className="text-stone-500 w-24 inline-block">الصفحات:</span> <span>{selectedManuscript.pageCount} صفحة</span></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h4 className="font-bold text-blue-900 mb-2">الملخص والمحتوى</h4>
+                  <p className="text-sm text-blue-800 leading-relaxed whitespace-pre-line">{selectedManuscript.summary}</p>
+                </div>
+
+                <div className="border border-stone-200 rounded-lg overflow-hidden print:hidden">
+                  <div className="bg-stone-50 px-4 py-2 border-b border-stone-200 font-bold text-stone-700">التفاصيل المالية وعقد النشر</div>
+                  <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-stone-500 text-xs mb-1">نوع الغلاف</p>
+                      <p className="font-bold">{selectedManuscript.coverType === 'hardcover' ? 'مجلد فني' : 'ورقي'}</p>
+                    </div>
+                    <div>
+                      <p className="text-stone-500 text-xs mb-1">عدد النسخ</p>
+                      <p className="font-bold">{selectedManuscript.printCopies}</p>
+                    </div>
+                    <div>
+                      <p className="text-stone-500 text-xs mb-1">تكلفة النسخة</p>
+                      <p className="font-bold font-mono">{selectedManuscript.productionCostPerBook} د.ج</p>
+                    </div>
+                    <div>
+                      <p className="text-stone-500 text-xs mb-1">سعر البيع المقترح</p>
+                      <p className="font-bold font-mono text-brand-900">{selectedManuscript.retailPrice} د.ج</p>
+                    </div>
+                  </div>
+                  {isEditingManuscript ? (
+                    <div className="p-4 bg-stone-100 border-t border-stone-200">
+                      <div className="flex flex-col md:flex-row gap-4 items-end">
+                        <div className="flex-1 w-full">
+                          <label className="block text-xs font-bold text-stone-700 mb-1.5">حالة المخطوط</label>
+                          <select 
+                            value={manuscriptForm.status}
+                            onChange={(e) => setManuscriptForm({...manuscriptForm, status: e.target.value})}
+                            className="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-900"
+                          >
+                            <option value="submitted">تم الإيداع (قيد المراجعة)</option>
+                            <option value="accepted">مقبول (في انتظار الدفع)</option>
+                            <option value="contract_signed">تم توقيع العقد</option>
+                            <option value="in_review">قيد التحرير والمراجعة</option>
+                            <option value="printed">جاهز / مطبوع</option>
+                          </select>
+                        </div>
+                        <div className="flex-1 w-full">
+                          <label className="block text-xs font-bold text-stone-700 mb-1.5">تكلفة الإنتاج (د.ج)</label>
+                          <input 
+                            type="number"
+                            value={manuscriptForm.productionCostPerBook}
+                            onChange={(e) => setManuscriptForm({...manuscriptForm, productionCostPerBook: e.target.value})}
+                            className="w-full border border-stone-300 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-brand-900"
+                            placeholder="مثال: 500"
+                          />
+                        </div>
+                        <div className="flex-1 w-full">
+                          <label className="block text-xs font-bold text-stone-700 mb-1.5">سعر البيع النهائي (د.ج)</label>
+                          <input 
+                            type="number"
+                            value={manuscriptForm.retailPrice}
+                            onChange={(e) => setManuscriptForm({...manuscriptForm, retailPrice: e.target.value})}
+                            className="w-full border border-stone-300 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-brand-900"
+                            placeholder="مثال: 1200"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={handleSaveManuscript}
+                            disabled={isUpdatingManuscript}
+                            className="bg-brand-900 text-white px-4 py-2 rounded text-sm font-bold hover:bg-brand-850 disabled:opacity-50"
+                          >
+                            {isUpdatingManuscript ? "جاري الحفظ..." : "حفظ التعديلات"}
+                          </button>
+                          <button 
+                            onClick={() => setIsEditingManuscript(false)}
+                            className="bg-stone-300 text-stone-700 px-4 py-2 rounded text-sm font-bold hover:bg-stone-400"
+                          >
+                            إلغاء
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-stone-50 border-t border-stone-200 flex justify-between items-center">
+                      <div className="text-sm">
+                        <p className="text-stone-600 mb-1">حالة المخطوط: <strong className="text-brand-900">
+                          {selectedManuscript.status === 'submitted' ? 'تم الإيداع (قيد المراجعة)' : 
+                           selectedManuscript.status === 'accepted' ? 'مقبول (في انتظار الدفع)' :
+                           selectedManuscript.status === 'contract_signed' ? 'تم توقيع العقد' :
+                           selectedManuscript.status === 'in_review' ? 'قيد التحرير والمراجعة' :
+                           selectedManuscript.status === 'printed' ? 'جاهز / مطبوع' : selectedManuscript.status}
+                        </strong></p>
+                        <p className="text-stone-600 mb-1">تم توقيع العقد إلكترونياً من قبل: <strong className="text-brand-900">"{selectedManuscript.signatureName}"</strong></p>
+                        <p className="text-xs text-stone-500">تاريخ الطلب: {new Date(selectedManuscript.createdAt).toLocaleString('ar-EG')}</p>
+                      </div>
+                      <button 
+                        onClick={() => setIsEditingManuscript(true)}
+                        className="bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 px-4 py-2 rounded text-sm font-bold transition-colors"
+                      >
+                        تعديل الحالة وسعر البيع
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div id="contract-print-area" className="hidden print:block text-black text-sm text-justify pt-8 pb-12 w-full max-w-4xl mx-auto bg-white absolute inset-0 z-50 p-8" dir="rtl">
+                <div className="text-center mb-8">
+                  <h4 className="font-bold text-3xl font-serif mb-2">عقد نشر كتاب</h4>
+                </div>
+
+                <p className="mb-4"><strong>الطرف الأول (الناشر):</strong> دار المتنبي للطباعة والنشر ممثلة بالمدير: السيد نصر خشاب الكائن مقرها بالمخطط الخصوصي للتعاونية العقارية القطعة رقم 14 الشيخ المقراني ولاية المسيلة/ الجزائر.</p>
+                <p className="mb-6"><strong>الطرف الثاني (المؤلف):</strong> السيد(ة): {selectedManuscript.authorName || "________________"} من جنسية جزائرية.</p>
+                
+                <p className="font-bold mb-2 text-center font-serif text-xl">مقدمة</p>
+                <p className="mb-2">تقوم دار المتنبي للطباعة والنشر بأعمال نشر الكتب وطباعتها.</p>
+                <p className="mb-2">يملك الطرف الثاني السيد (ة): {selectedManuscript.authorName || "________________"} كتاب بعنوان: "{selectedManuscript.bookTitle || "________________"}"</p>
+                <p className="mb-6">ويرغب بالتعامل مع دار المتنبي للطباعة والنشر لنشر وطباعة هذا الكتاب وقد وافق على ذلك.</p>
+
+                <p className="mb-4"><strong>البند الأول:</strong> تعتبر المقدمة أعلاه وجميع الملاحق إن وجدت جزءا لا يتجزأ من هذا العقد.</p>
+                
+                <p className="mb-6"><strong>البند الثاني:</strong> يمنح للناشر بصورة حصرية طوال مدة العقد حقوق طبع الكتاب ونشره.</p>
+                
+                <p className="font-bold mb-2 text-lg">البند الثالث: التزامات الناشر</p>
+                <p className="mb-2">يتعهد ويلتزم الناشر بالقيام بما يلي:</p>
+                <ul className="list-none space-y-2 mb-6 pr-4">
+                  <li>1- طباعة الكتاب وفقا للنسخة المسلمة له من طرف المؤلف وبالجودة التي تضمن رضا القراء.</li>
+                  <li>2- تقوم دار المتنبي للطباعة والنشر بإصدار {selectedManuscript.printCopies || 0} نسخة من الكتاب كطبعة أولى قابلة للتمديد يتحمل المؤلف تكاليف طبعها.</li>
+                  <li>3- تلتزم الدار بـ:</li>
+                  <ul className="list-disc pr-8 space-y-1 mb-2">
+                    <li>تنسيق الكتاب.</li>
+                    <li>تصميم الغلاف.</li>
+                    <li>طباعة الكتاب.</li>
+                    <li>تخزين الكتاب.</li>
+                    <li>التوزيع والتسويق والتنسيق مع وسائل الاعلام والمؤسسات الثقافية.</li>
+                    <li>المشاركة بالكتاب في المعارض الوطنية والدولية.</li>
+                  </ul>
+                  <li>4- يقوم الناشر بجميع التصاريح القانونية اللازمة تجاه الإيداع القانوني.</li>
+                  <li>5- يحق للناشر تحديد ثمن بيع الكتاب دون الرجوع للمؤلف على أن يحفظ للمؤلف حقوقه المادية.</li>
+                  <li>6- يستلم المؤلف عدد 20 نسخة من الكتاب.</li>
+                  <li>7- تسديد نسبة فائدة المؤلف وفقا للبند الخامس من هذا العقد.</li>
+                  <li>8- يحق للناشر ترجمة الكتاب ونشره كليا أو جزئيا في أي لغة أخرى بعد أخذ الموافقة الخطية من المؤلف وخلال مدة العقد.</li>
+                  <li>- لا يحق للناشر بعد انتهاء مدة العقد إعادة نشر الكتاب مجددا أو أي جزء منه بأي شكل من الأشكال وتحت أي عنوان كان في الجزائر أو خارجها دون الموافقة الخطية للمؤلف.</li>
+                  <li>9- يقدم الناشر للمؤلف التصميم النهائي للكتاب وعلى المؤلف إرسال الموافقة الخطية للناشر في غضون أسبوع من الاستلام، وإن لم يتم إرسال الموافقة فإن الناشر سوف يقوم باعتماد الغلاف وطباعة الكتاب دون الرجوع للمؤلف.</li>
+                </ul>
+
+                <p className="font-bold mb-2 text-lg">البند الرابع: التزامات المؤلف</p>
+                <p className="mb-2">يتعهد ويلتزم المؤلف بما يلي:</p>
+                <ul className="list-none space-y-2 mb-6 pr-4">
+                  <li>1- يسلم المؤلف للناشر مخطوطة الكتاب على شكل نسخة الكترونية WORD مع ملخص حول الكتاب والسيرة الذاتية للمؤلف وأي مستندات لازمة وفقا لتقدير الناشر.</li>
+                  <li>2- يكون على المؤلف مراجعة وتصحيح الكتاب المسلم إليه وإعادته إلى الناشر خلال أسبوعين.</li>
+                  <li>3- يلتزم المؤلف بإضافة التعديلات والإضافات المستجدة على الكتاب.</li>
+                  <li>4- لا يحق للمؤلف طوال مدة العقد منح حق نشر وتوزيع وترجمة الكتاب لأي جهة أخرى إلا بعد أخذ موافقة الناشر المسبقة والخطية على ذلك، وفي حالة مخالفة المؤلف لهذه الشروط تسقط حقوقه المالية عن هذا الكتاب، ويلتزم بدفع جميع الأضرار المادية والمعنوية المترتبة عن ذلك للناشر.</li>
+                  <li>5- يتعين على المؤلف أن يلتزم بذكر مصادر ومراجع معلومات الكتاب والبيانات الموجودة فيه وإبراز ما يثبت موافقة المصادر التي منحته تلك المعلومات والبيانات.</li>
+                  <li>6- يمنع على المؤلف تحميل وإتاحة النسخة الالكترونية للكتاب على مواقع التواصل الاجتماعي وكل ما يتعلق بالتحميل المجاني عدا الغلاف وفهرس الكتاب.</li>
+                </ul>
+
+                <p className="font-bold mb-2 text-lg">البند الخامس: الحقوق المالية</p>
+                <ul className="list-none space-y-2 mb-6 pr-4">
+                  <li>1- يعود للمؤلف ما نسبته 10% من سعر بيع الكتاب بالجملة. (أرباحك المقدرة: {selectedManuscript.royaltyPerSale} د.ج للنسخة)</li>
+                  <li>2- تجري المحاسبة بعد بيع 100 نسخة من الكتاب.</li>
+                </ul>
+
+                <p className="mb-6"><strong>البند السادس: مدة العقد</strong><br/>مدة هذا العقد 05 سنوات بدءا من تاريخ تحريره.</p>
+
+                <p className="font-bold mb-2 text-lg">البند السابع: أحكام خاصة</p>
+                <p className="mb-6">يصرح المؤلف بأنه وحده صاحب حقوق الاستغلال العائدة للكتاب، وبأنه يضمن للناشر بموجب هذا العقد عدم التعرض من الغير بهذا الخصوص، كما يصرح أن هذا الكتاب ليس في مضمونه ما يمنعه القانون وليس فيه نقل أو استعارة بما قد يعرض الناشر للمسؤولية.</p>
+
+                <p className="font-bold mb-2 text-lg">البند الثامن: حل النزاعات</p>
+                <p className="mb-6">كل خلاف قد ينشأ عن هذا العقد يحل وديا أو يعرض على محكم واحد يتفق على تعيينه الناشر والمؤلف، وإذا تعذر ذلك فيمكن اللجوء إلى المحاكم بناءا على طلب أحد المتنازعين.</p>
+
+                <p className="font-bold mb-2 text-lg">البند التاسع: الإنهاء</p>
+                <p className="mb-8">للناشر الحق في إنهاء هذا العقد في حالة إخفاق المؤلف في أداء أي من التزاماته وفي حالة عدم إجازة الكتاب من قبل لجان دار النشر في أي مرحلة من مراحل إعداد الكتاب أو في حالة عدم موافقة أي من الجهات الخاصة بمنح التراخيص للكتاب.</p>
+
+                <div className="flex justify-between items-start pt-8 pb-16 px-12 border-t-2 border-stone-800">
+                  <div className="text-center">
+                    <p className="font-bold mb-16 text-lg">الطرف الأول: الناشر</p>
+                    <p className="font-bold">دار المتنبي للطباعة والنشر</p>
+                    <p className="text-sm">المدير العام: نصر خشاب</p>
+                    <p className="mt-8 text-stone-400 italic">موقع إلكترونياً</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold mb-16 text-lg">الطرف الثاني: المؤلف</p>
+                    <p className="font-bold">{selectedManuscript.authorName}</p>
+                    <p className="mt-8 text-stone-400 italic">موقع إلكترونياً بـ "{selectedManuscript.signatureName}"</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3 print:hidden">
+                <button 
+                  onClick={() => {
+                    const blob = new Blob([`هذا ملف تجريبي يمثل المخطوط المرفوع باسم: ${selectedManuscript.uploadedFileName}\nلا يتم حفظ الملفات الفعلية في هذه النسخة التجريبية.`], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = selectedManuscript.uploadedFileName || 'manuscript.txt';
+                    link.click();
+                  }}
+                  className="bg-brand-50 text-brand-900 border border-brand-200 hover:bg-brand-100 px-4 py-2 rounded text-sm font-bold flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  تحميل المخطوط
+                </button>
+                <button 
+                  onClick={() => {
+                    const blob = new Blob([selectedManuscript.summary], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `ملخص_${selectedManuscript.bookTitle}.txt`;
+                    link.click();
+                  }}
+                  className="bg-stone-200 text-stone-700 hover:bg-stone-300 px-4 py-2 rounded text-sm font-bold flex items-center gap-2"
+                >
+                  <Download size={16} />
+                  تحميل الملخص
+                </button>
+                <button 
+                  onClick={() => {
+                    const element = document.getElementById('contract-print-area');
+                    if (element) {
+                      element.classList.remove('hidden');
+                      element.classList.remove('print:block');
+                      
+                      const opt = {
+                        margin:       10,
+                        filename:     `contract_${selectedManuscript.bookTitle}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                      };
+                      
+                      html2pdf().from(element).set(opt).save().then(() => {
+                        element.classList.add('hidden');
+                        element.classList.add('print:block');
+                      });
+                    }
+}}
+                  className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-4 py-2 rounded text-sm font-bold flex items-center gap-2"
+                >
+                  <Printer size={16} />
+                  طباعة العقد
+                </button>
+                <button 
+                  onClick={() => setSelectedManuscript(null)}
+                  className="bg-brand-900 text-white hover:bg-brand-850 px-6 py-2 rounded text-sm font-bold"
+                >
+                  إغلاق
+                </button>
+              </div>
             </div>
           </div>
         )}

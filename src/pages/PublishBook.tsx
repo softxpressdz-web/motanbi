@@ -1,3 +1,4 @@
+import html2pdf from "html2pdf.js";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -30,7 +31,7 @@ export function PublishBook() {
   const [errorMessage, setErrorMessage] = useState("");
 
   // Calculate pricing estimates
-  const baseCostPerPage = 2; // DA
+  const baseCostPerPage = 7; // DA
   const coverCost = coverType === "hardcover" ? 350 : 150; // DA
   const productionCostPerBook = (pageCount * baseCostPerPage) + coverCost;
   
@@ -505,6 +506,75 @@ export function PublishBook() {
                       </div>
                     )}
 
+                    <div className="bg-white border border-stone-200 rounded p-4 h-64 overflow-y-auto text-xs leading-relaxed text-stone-600 mb-4 shadow-inner text-justify">
+                      <div className="text-center mb-6">
+                        <h4 className="font-bold text-brand-900 text-base font-serif mb-1">عقد نشر كتاب</h4>
+                      </div>
+
+                      <p className="mb-2"><strong>الطرف الأول:</strong> دار المتنبي للطباعة والنشر ممثلة بالمدير: السيد نصر خشاب الكائن مقرها بالمخطط الخصوصي للتعاونية العقارية القطعة رقم 14 الشيخ المقراني ولاية المسيلة/ الجزائر.</p>
+                      <p className="mb-4"><strong>الطرف الثاني (المؤلف):</strong> السيد(ة): {authorName || "________________"} من جنسية جزائرية.</p>
+                      
+                      <p className="font-bold text-stone-800 mb-1 text-center font-serif text-sm">مقدمة</p>
+                      <p className="mb-1">تقوم دار المتنبي للطباعة والنشر بأعمال نشر الكتب وطباعتها.</p>
+                      <p className="mb-1">يملك الطرف الثاني السيد (ة): {authorName || "________________"} كتاب بعنوان: "{bookTitle || "________________"}"</p>
+                      <p className="mb-4">ويرغب بالتعامل مع دار المتنبي للطباعة والنشر لنشر وطباعة هذا الكتاب وقد وافق على ذلك.</p>
+
+                      <p className="mb-2"><strong className="text-stone-800">البند الأول:</strong> تعتبر المقدمة أعلاه وجميع الملاحق إن وجدت جزءا لا يتجزأ من هذا العقد.</p>
+                      
+                      <p className="mb-2"><strong className="text-stone-800">البند الثاني:</strong> يمنح للناشر بصورة حصرية طوال مدة العقد حقوق طبع الكتاب ونشره.</p>
+                      
+                      <p className="font-bold text-stone-800 mb-1">البند الثالث: التزامات الناشر</p>
+                      <p className="mb-1">يتعهد ويلتزم الناشر بالقيام بما يلي:</p>
+                      <ul className="list-none space-y-1 mb-2 pr-2">
+                        <li>1- طباعة الكتاب وفقا للنسخة المسلمة له من طرف المؤلف وبالجودة التي تضمن رضا القراء.</li>
+                        <li>2- تقوم دار المتنبي للطباعة والنشر بإصدار {printCopies || 0} نسخة من الكتاب كطبعة أولى قابلة للتمديد يتحمل المؤلف تكاليف طبعها.</li>
+                        <li>3- تلتزم الدار بـ:</li>
+                        <ul className="list-disc pr-8 space-y-1 mb-1">
+                          <li>تنسيق الكتاب.</li>
+                          <li>تصميم الغلاف.</li>
+                          <li>طباعة الكتاب.</li>
+                          <li>تخزين الكتاب.</li>
+                          <li>التوزيع والتسويق والتنسيق مع وسائل الاعلام والمؤسسات الثقافية.</li>
+                          <li>المشاركة بالكتاب في المعارض الوطنية والدولية.</li>
+                        </ul>
+                        <li>4- يقوم الناشر بجميع التصاريح القانونية اللازمة تجاه الإيداع القانوني.</li>
+                        <li>5- يحق للناشر تحديد ثمن بيع الكتاب دون الرجوع للمؤلف على أن يحفظ للمؤلف حقوقه المادية.</li>
+                        <li>6- يستلم المؤلف عدد 20 نسخة من الكتاب.</li>
+                        <li>7- تسديد نسبة فائدة المؤلف وفقا للبند الخامس من هذا العقد.</li>
+                        <li>8- يحق للناشر ترجمة الكتاب ونشره كليا أو جزئيا في أي لغة أخرى بعد أخذ الموافقة الخطية من المؤلف وخلال مدة العقد.</li>
+                        <li>- لا يحق للناشر بعد انتهاء مدة العقد إعادة نشر الكتاب مجددا أو أي جزء منه بأي شكل من الأشكال وتحت أي عنوان كان في الجزائر أو خارجها دون الموافقة الخطية للمؤلف.</li>
+                        <li>9- يقدم الناشر للمؤلف التصميم النهائي للكتاب وعلى المؤلف إرسال الموافقة الخطية للناشر في غضون أسبوع من الاستلام، وإن لم يتم إرسال الموافقة فإن الناشر سوف يقوم باعتماد الغلاف وطباعة الكتاب دون الرجوع للمؤلف.</li>
+                      </ul>
+
+                      <p className="font-bold text-stone-800 mb-1 mt-4">البند الرابع: التزامات المؤلف</p>
+                      <p className="mb-1">يتعهد ويلتزم المؤلف بما يلي:</p>
+                      <ul className="list-none space-y-1 mb-4 pr-2">
+                        <li>1- يسلم المؤلف للناشر مخطوطة الكتاب على شكل نسخة الكترونية WORD مع ملخص حول الكتاب والسيرة الذاتية للمؤلف وأي مستندات لازمة وفقا لتقدير الناشر.</li>
+                        <li>2- يكون على المؤلف مراجعة وتصحيح الكتاب المسلم إليه وإعادته إلى الناشر خلال أسبوعين.</li>
+                        <li>3- يلتزم المؤلف بإضافة التعديلات والإضافات المستجدة على الكتاب.</li>
+                        <li>4- لا يحق للمؤلف طوال مدة العقد منح حق نشر وتوزيع وترجمة الكتاب لأي جهة أخرى إلا بعد أخذ موافقة الناشر المسبقة والخطية على ذلك، وفي حالة مخالفة المؤلف لهذه الشروط تسقط حقوقه المالية عن هذا الكتاب، ويلتزم بدفع جميع الأضرار المادية والمعنوية المترتبة عن ذلك للناشر.</li>
+                        <li>5- يتعين على المؤلف أن يلتزم بذكر مصادر ومراجع معلومات الكتاب والبيانات الموجودة فيه وإبراز ما يثبت موافقة المصادر التي منحته تلك المعلومات والبيانات.</li>
+                        <li>6- يمنع على المؤلف تحميل وإتاحة النسخة الالكترونية للكتاب على مواقع التواصل الاجتماعي وكل ما يتعلق بالتحميل المجاني عدا الغلاف وفهرس الكتاب.</li>
+                      </ul>
+
+                      <p className="font-bold text-stone-800 mb-1">البند الخامس: الحقوق المالية</p>
+                      <ul className="list-none space-y-1 mb-4 pr-2">
+                        <li>1- يعود للمؤلف ما نسبته 10% من سعر بيع الكتاب بالجملة. (أرباحك المقدرة: {royaltyPerSale} د.ج للنسخة)</li>
+                        <li>2- تجري المحاسبة بعد بيع 100 نسخة من الكتاب.</li>
+                      </ul>
+
+                      <p className="mb-4"><strong className="text-stone-800">البند السادس: مدة العقد</strong><br/>مدة هذا العقد 05 سنوات بدءا من تاريخ تحريره.</p>
+
+                      <p className="font-bold text-stone-800 mb-1">البند السابع: أحكام خاصة</p>
+                      <p className="mb-4">يصرح المؤلف بأنه وحده صاحب حقوق الاستغلال العائدة للكتاب، وبأنه يضمن للناشر بموجب هذا العقد عدم التعرض من الغير بهذا الخصوص، كما يصرح أن هذا الكتاب ليس في مضمونه ما يمنعه القانون وليس فيه نقل أو استعارة بما قد يعرض الناشر للمسؤولية.</p>
+
+                      <p className="font-bold text-stone-800 mb-1">البند الثامن: حل النزاعات</p>
+                      <p className="mb-4">كل خلاف قد ينشأ عن هذا العقد يحل وديا أو يعرض على محكم واحد يتفق على تعيينه الناشر والمؤلف، وإذا تعذر ذلك فيمكن اللجوء إلى المحاكم بناءا على طلب أحد المتنازعين.</p>
+
+                      <p className="font-bold text-stone-800 mb-1">البند التاسع: الإنهاء</p>
+                      <p className="mb-4">للناشر الحق في إنهاء هذا العقد في حالة إخفاق المؤلف في أداء أي من التزاماته وفي حالة عدم إجازة الكتاب من قبل لجان دار النشر في أي مرحلة من مراحل إعداد الكتاب أو في حالة عدم موافقة أي من الجهات الخاصة بمنح التراخيص للكتاب.</p>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-bold text-stone-500 mb-1">
                         اكتب اسمك الثلاثي للموافقة والتعاقد إلكترونياً *
@@ -574,18 +644,101 @@ export function PublishBook() {
                     <p className="text-stone-500 text-sm">أهلاً بك رسمياً كأحد كُتّاب دار المتنبي المميزين!</p>
                   </div>
 
-                  <div className="bg-stone-50 p-4 rounded border border-stone-150 text-xs text-right space-y-2 max-w-md mx-auto">
+                  <div className="bg-stone-50 p-4 rounded border border-stone-150 text-xs text-right space-y-2 max-w-md mx-auto print:hidden">
                     <div><span className="text-stone-400">اسم الكاتب الموقّع:</span> <span className="font-bold text-stone-700">{signatureName}</span></div>
                     <div><span className="text-stone-400">اسم المصنف المعتمد:</span> <span className="font-bold text-stone-700">"{bookTitle}"</span></div>
                     <div><span className="text-stone-400">سعر البيع النهائي:</span> <span className="font-bold text-brand-900">{retailPrice} د.ج</span></div>
                     <div><span className="text-stone-400">حالة الطلب الحالية:</span> <span className="font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">قيد التدقيق اللغوي والتنسيق</span></div>
                   </div>
 
-                  <p className="text-stone-500 text-sm max-w-md mx-auto leading-relaxed">
+                  <p className="text-stone-500 text-sm max-w-md mx-auto leading-relaxed print:hidden">
                     لقد قمنا بإرسال نسخة كاملة من العقد المبرم وتفاصيل التسعير إلى بريدك الإلكتروني <strong>{email}</strong>. سيقوم المحرر المسؤول بالتواصل معك عبر الهاتف للتنسيق.
                   </p>
 
-                  <div className="pt-4 flex gap-4 justify-center">
+                  <div className="hidden print:block text-black text-sm text-justify pt-8 w-full max-w-4xl mx-auto" dir="rtl">
+                    <div className="text-center mb-8">
+                      <h4 className="font-bold text-3xl font-serif mb-2">عقد نشر كتاب</h4>
+                    </div>
+
+                    <p className="mb-4"><strong>الطرف الأول (الناشر):</strong> دار المتنبي للطباعة والنشر ممثلة بالمدير: السيد نصر خشاب الكائن مقرها بالمخطط الخصوصي للتعاونية العقارية القطعة رقم 14 الشيخ المقراني ولاية المسيلة/ الجزائر.</p>
+                    <p className="mb-6"><strong>الطرف الثاني (المؤلف):</strong> السيد(ة): {authorName || "________________"} من جنسية جزائرية.</p>
+                    
+                    <p className="font-bold mb-2 text-center font-serif text-xl">مقدمة</p>
+                    <p className="mb-2">تقوم دار المتنبي للطباعة والنشر بأعمال نشر الكتب وطباعتها.</p>
+                    <p className="mb-2">يملك الطرف الثاني السيد (ة): {authorName || "________________"} كتاب بعنوان: "{bookTitle || "________________"}"</p>
+                    <p className="mb-6">ويرغب بالتعامل مع دار المتنبي للطباعة والنشر لنشر وطباعة هذا الكتاب وقد وافق على ذلك.</p>
+
+                    <p className="mb-4"><strong>البند الأول:</strong> تعتبر المقدمة أعلاه وجميع الملاحق إن وجدت جزءا لا يتجزأ من هذا العقد.</p>
+                    
+                    <p className="mb-6"><strong>البند الثاني:</strong> يمنح للناشر بصورة حصرية طوال مدة العقد حقوق طبع الكتاب ونشره.</p>
+                    
+                    <p className="font-bold mb-2 text-lg">البند الثالث: التزامات الناشر</p>
+                    <p className="mb-2">يتعهد ويلتزم الناشر بالقيام بما يلي:</p>
+                    <ul className="list-none space-y-2 mb-6 pr-4">
+                      <li>1- طباعة الكتاب وفقا للنسخة المسلمة له من طرف المؤلف وبالجودة التي تضمن رضا القراء.</li>
+                      <li>2- تقوم دار المتنبي للطباعة والنشر بإصدار {printCopies || 0} نسخة من الكتاب كطبعة أولى قابلة للتمديد يتحمل المؤلف تكاليف طبعها.</li>
+                      <li>3- تلتزم الدار بـ:</li>
+                      <ul className="list-disc pr-8 space-y-1 mb-2">
+                        <li>تنسيق الكتاب.</li>
+                        <li>تصميم الغلاف.</li>
+                        <li>طباعة الكتاب.</li>
+                        <li>تخزين الكتاب.</li>
+                        <li>التوزيع والتسويق والتنسيق مع وسائل الاعلام والمؤسسات الثقافية.</li>
+                        <li>المشاركة بالكتاب في المعارض الوطنية والدولية.</li>
+                      </ul>
+                      <li>4- يقوم الناشر بجميع التصاريح القانونية اللازمة تجاه الإيداع القانوني.</li>
+                      <li>5- يحق للناشر تحديد ثمن بيع الكتاب دون الرجوع للمؤلف على أن يحفظ للمؤلف حقوقه المادية.</li>
+                      <li>6- يستلم المؤلف عدد 20 نسخة من الكتاب.</li>
+                      <li>7- تسديد نسبة فائدة المؤلف وفقا للبند الخامس من هذا العقد.</li>
+                      <li>8- يحق للناشر ترجمة الكتاب ونشره كليا أو جزئيا في أي لغة أخرى بعد أخذ الموافقة الخطية من المؤلف وخلال مدة العقد.</li>
+                      <li>- لا يحق للناشر بعد انتهاء مدة العقد إعادة نشر الكتاب مجددا أو أي جزء منه بأي شكل من الأشكال وتحت أي عنوان كان في الجزائر أو خارجها دون الموافقة الخطية للمؤلف.</li>
+                      <li>9- يقدم الناشر للمؤلف التصميم النهائي للكتاب وعلى المؤلف إرسال الموافقة الخطية للناشر في غضون أسبوع من الاستلام، وإن لم يتم إرسال الموافقة فإن الناشر سوف يقوم باعتماد الغلاف وطباعة الكتاب دون الرجوع للمؤلف.</li>
+                    </ul>
+
+                    <p className="font-bold mb-2 text-lg">البند الرابع: التزامات المؤلف</p>
+                    <p className="mb-2">يتعهد ويلتزم المؤلف بما يلي:</p>
+                    <ul className="list-none space-y-2 mb-6 pr-4">
+                      <li>1- يسلم المؤلف للناشر مخطوطة الكتاب على شكل نسخة الكترونية WORD مع ملخص حول الكتاب والسيرة الذاتية للمؤلف وأي مستندات لازمة وفقا لتقدير الناشر.</li>
+                      <li>2- يكون على المؤلف مراجعة وتصحيح الكتاب المسلم إليه وإعادته إلى الناشر خلال أسبوعين.</li>
+                      <li>3- يلتزم المؤلف بإضافة التعديلات والإضافات المستجدة على الكتاب.</li>
+                      <li>4- لا يحق للمؤلف طوال مدة العقد منح حق نشر وتوزيع وترجمة الكتاب لأي جهة أخرى إلا بعد أخذ موافقة الناشر المسبقة والخطية على ذلك، وفي حالة مخالفة المؤلف لهذه الشروط تسقط حقوقه المالية عن هذا الكتاب، ويلتزم بدفع جميع الأضرار المادية والمعنوية المترتبة عن ذلك للناشر.</li>
+                      <li>5- يتعين على المؤلف أن يلتزم بذكر مصادر ومراجع معلومات الكتاب والبيانات الموجودة فيه وإبراز ما يثبت موافقة المصادر التي منحته تلك المعلومات والبيانات.</li>
+                      <li>6- يمنع على المؤلف تحميل وإتاحة النسخة الالكترونية للكتاب على مواقع التواصل الاجتماعي وكل ما يتعلق بالتحميل المجاني عدا الغلاف وفهرس الكتاب.</li>
+                    </ul>
+
+                    <p className="font-bold mb-2 text-lg">البند الخامس: الحقوق المالية</p>
+                    <ul className="list-none space-y-2 mb-6 pr-4">
+                      <li>1- يعود للمؤلف ما نسبته 10% من سعر بيع الكتاب بالجملة. (أرباحك المقدرة: {royaltyPerSale} د.ج للنسخة)</li>
+                      <li>2- تجري المحاسبة بعد بيع 100 نسخة من الكتاب.</li>
+                    </ul>
+
+                    <p className="mb-6"><strong>البند السادس: مدة العقد</strong><br/>مدة هذا العقد 05 سنوات بدءا من تاريخ تحريره.</p>
+
+                    <p className="font-bold mb-2 text-lg">البند السابع: أحكام خاصة</p>
+                    <p className="mb-6">يصرح المؤلف بأنه وحده صاحب حقوق الاستغلال العائدة للكتاب، وبأنه يضمن للناشر بموجب هذا العقد عدم التعرض من الغير بهذا الخصوص، كما يصرح أن هذا الكتاب ليس في مضمونه ما يمنعه القانون وليس فيه نقل أو استعارة بما قد يعرض الناشر للمسؤولية.</p>
+
+                    <p className="font-bold mb-2 text-lg">البند الثامن: حل النزاعات</p>
+                    <p className="mb-6">كل خلاف قد ينشأ عن هذا العقد يحل وديا أو يعرض على محكم واحد يتفق على تعيينه الناشر والمؤلف، وإذا تعذر ذلك فيمكن اللجوء إلى المحاكم بناءا على طلب أحد المتنازعين.</p>
+
+                    <p className="font-bold mb-2 text-lg">البند التاسع: الإنهاء</p>
+                    <p className="mb-8">للناشر الحق في إنهاء هذا العقد في حالة إخفاق المؤلف في أداء أي من التزاماته وفي حالة عدم إجازة الكتاب من قبل لجان دار النشر في أي مرحلة من مراحل إعداد الكتاب أو في حالة عدم موافقة أي من الجهات الخاصة بمنح التراخيص للكتاب.</p>
+
+                    <div className="flex justify-between items-start pt-8 pb-16 px-12 border-t-2 border-stone-800">
+                      <div className="text-center">
+                        <p className="font-bold mb-16 text-lg">الطرف الأول: الناشر</p>
+                        <p className="font-bold">دار المتنبي للطباعة والنشر</p>
+                        <p className="text-sm">المدير العام: نصر خشاب</p>
+                        <p className="mt-8 text-stone-400 italic">موقع إلكترونياً</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold mb-16 text-lg">الطرف الثاني: المؤلف</p>
+                        <p className="font-bold">{authorName}</p>
+                        <p className="mt-8 text-stone-400 italic">موقع إلكترونياً بـ "{signatureName}"</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex gap-4 justify-center print:hidden">
                     <button 
                       onClick={() => {
                         setFormSubmitted(false);
@@ -599,7 +752,26 @@ export function PublishBook() {
                       تسجيل عمل آخر جديد
                     </button>
                     <button 
-                      onClick={() => { window.print(); }}
+                      onClick={() => {
+                    const element = document.getElementById('contract-print-area');
+                    if (element) {
+                      element.classList.remove('hidden');
+                      element.classList.remove('print:block');
+                      
+                      const opt = {
+                        margin:       10,
+                        filename:     `contract_author.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                      };
+                      
+                      html2pdf().from(element).set(opt).save().then(() => {
+                        element.classList.add('hidden');
+                        element.classList.add('print:block');
+                      });
+                    }
+}}
                       className="text-xs text-stone-600 font-bold border border-stone-200 px-6 py-2.5 rounded hover:bg-stone-50 transition-all"
                     >
                       طباعة نسخة العقد

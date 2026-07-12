@@ -339,7 +339,7 @@ export function Cart() {
             </div>
 
             {/* Action buttons */}
-            <div className="flex flex-wrap gap-4 justify-between items-center border-t border-stone-150 pt-6">
+            <div className="flex flex-wrap gap-4 justify-between items-center border-t border-stone-150 pt-6 print:hidden">
               <div className="flex gap-2">
                 <button 
                   onClick={() => window.print()}
