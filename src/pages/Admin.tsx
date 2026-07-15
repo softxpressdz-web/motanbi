@@ -1,4 +1,3 @@
-import html2pdf from "html2pdf.js";
 import React, { useState, useEffect } from "react";
 import { 
   LayoutDashboard, DollarSign, BookOpen, ScrollText, Mail, Users, 
