@@ -19,6 +19,7 @@ import { Contact } from "./pages/Contact";
 import { PublishBook } from "./pages/PublishBook";
 import { Admin } from "./pages/Admin";
 import { Profile } from "./pages/Profile";
+import { PublishingPolicy } from "./pages/PublishingPolicy";
 
 // Simple placeholders for pages not fully built yet to save tokens
 const Blog = () => <div className="max-w-7xl mx-auto p-12 text-center text-xl font-serif">المدونة - قيد التطوير</div>;
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/activities" element={<Activities />} />
           <Route path="/about-publishing" element={<AboutPublishing />} />
           <Route path="/publish-book" element={<PublishBook />} />
+          <Route path="/publishing-policy" element={<PublishingPolicy />} />
           <Route path="/admin" element={<Admin dbUser={dbUser} />} />
           <Route path="/profile" element={<Profile user={user} dbUser={dbUser} />} />
           <Route path="/offers" element={<Offers />} />

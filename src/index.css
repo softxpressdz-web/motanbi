@@ -24,5 +24,35 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-@media print { nav, footer, header { display: none !important; } body { background-color: white !important; } }
-@media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+
+
+@media print {
+  nav, footer, header { display: none !important; }
+  body { background-color: white !important; }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #contract-print-area, #contract-print-area * {
+    visibility: visible;
+  }
+  #contract-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .fixed, .overflow-hidden, .overflow-y-auto {
+    position: static !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+}

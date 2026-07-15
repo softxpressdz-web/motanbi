@@ -96,7 +96,7 @@ export function AdminBooks({ allBooks, allCategories, onRefresh }: AdminBooksPro
 
     setIsCompressing(true);
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(file as unknown as Blob);
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target?.result as string;
@@ -133,7 +133,7 @@ export function AdminBooks({ allBooks, allCategories, onRefresh }: AdminBooksPro
 
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file as unknown as Blob);
       reader.onload = (event) => {
         const img = new Image();
         img.src = event.target?.result as string;

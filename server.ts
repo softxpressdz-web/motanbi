@@ -197,7 +197,8 @@ export const app = express();
 
 
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // Run seeding in background
   seedDatabase();
@@ -851,10 +852,15 @@ export const app = express();
   app.put("/api/manuscripts/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { status, retailPrice, productionCostPerBook } = req.body;
+      const { status, retailPrice, productionCostPerBook, pageCount, coverType, printCopies, totalPrintCost, signatureName } = req.body;
       const updateData: any = {};
       if (status !== undefined) updateData.status = status;
       if (productionCostPerBook !== undefined) updateData.productionCostPerBook = productionCostPerBook;
+      if (pageCount !== undefined) updateData.pageCount = pageCount;
+      if (coverType !== undefined) updateData.coverType = coverType;
+      if (printCopies !== undefined) updateData.printCopies = printCopies;
+      if (totalPrintCost !== undefined) updateData.totalPrintCost = totalPrintCost;
+      if (signatureName !== undefined) updateData.signatureName = signatureName;
       if (retailPrice !== undefined) {
         updateData.retailPrice = retailPrice;
         // update royalty as well: 10% of retail price

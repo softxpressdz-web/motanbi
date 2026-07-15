@@ -136,7 +136,7 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
       <div className="bg-brand-900 border-b border-brand-800 text-stone-300">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex justify-between items-center text-xs">
           <div className="flex gap-4 items-center">
-            <Link to="/about-publishing" className="hover:text-accent-gold transition-colors">سياسة النشر</Link>
+            <Link to="/publishing-policy" className="hover:text-accent-gold transition-colors">سياسة النشر</Link>
             <span className="text-stone-700">|</span>
             <Link to="/publish-book" className="hover:text-accent-gold transition-colors">أنشر كتاب</Link>
             <span className="text-stone-700">|</span>
@@ -266,7 +266,7 @@ export function Layout({ children, user, dbUser }: { children: ReactNode; user: 
                 </div>
               </li>
               <li><Link to="/publish-book" className="hover:text-accent-gold transition-colors">أنشر معنا</Link></li>
-              <li><Link to="/about" className="hover:text-accent-gold transition-colors">من نحن</Link></li>
+                            <li><Link to="/about" className="hover:text-accent-gold transition-colors">من نحن</Link></li>
               <li><Link to="/contact" className="hover:text-accent-gold transition-colors">اتصل بنا</Link></li>
               {dbUser?.role === "admin" && (
                 <li><Link to="/admin" className="hover:text-accent-gold transition-colors font-bold text-accent-gold border-r border-brand-800 pr-4">لوحة التحكم والإشراف</Link></li>

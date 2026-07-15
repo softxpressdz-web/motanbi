@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import fs from 'fs';
+
+const code = `import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Upload, FileText, CheckCircle, Send, Book, AlertCircle, HelpCircle, FileCheck2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router"; // added for the Link component
@@ -243,9 +245,9 @@ export function PublishBook() {
                       <div 
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
-                        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                        className={\`border-2 border-dashed rounded-xl p-8 text-center transition-all \${
                           uploadedFile ? 'border-brand-500 bg-brand-50' : 'border-stone-200 bg-stone-50 hover:bg-stone-100'
-                        }`}
+                        }\`}
                       >
                         <input
                           type="file"
@@ -279,7 +281,7 @@ export function PublishBook() {
                               <div className="w-full max-w-xs bg-stone-200 rounded-full h-1.5 mt-2 overflow-hidden">
                                 <div 
                                   className="bg-brand-600 h-1.5 rounded-full transition-all duration-300 ease-out"
-                                  style={{ width: `${uploadProgress}%` }}
+                                  style={{ width: \`\${uploadProgress}%\` }}
                                 ></div>
                               </div>
                             ) : (
@@ -402,3 +404,6 @@ export function PublishBook() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/pages/PublishBook.tsx', code);
